@@ -3,7 +3,7 @@ use crate::models::countries::Country;
 use sqlx::PgPool;
 
 pub async fn get_countries(db: web::Data<PgPool>) -> impl Responder {
-    let result = sqlx::query_as::<_, Country>("select id, name from countries")
+    let result = sqlx::query_as::<_, Country>("select id, name, region from countries")
         .fetch_all(db.get_ref())
         .await;
 

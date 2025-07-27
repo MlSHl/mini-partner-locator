@@ -5,4 +5,5 @@ use sqlx::FromRow;
 pub struct Country {
     pub id: i32,
     pub name: String,
+    pub region: String,
 }
