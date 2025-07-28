@@ -6,8 +6,6 @@ use sqlx::prelude::FromRow;
 pub struct Partner {
     pub id: i32,
     pub name: String,
-    pub country: String,
-    pub city: String,
     pub email: String,
     pub website_url: String,
     pub created_at: NaiveDateTime,
@@ -16,8 +14,7 @@ pub struct Partner {
 #[derive(Deserialize)]
 pub struct NewPartner {
     pub name: String,
-    pub country: String,
-    pub city: String,
     pub email: String,
     pub website_url: String,
+    pub country_ids: Vec<i32>,
 }
