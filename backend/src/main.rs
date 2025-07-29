@@ -4,7 +4,8 @@ mod db;
 
 use std::env;
 
-use actix_web::{get, web, App, HttpServer, Responder};
+use actix_cors::Cors;
+use actix_web::{get, http::header, web, App, HttpServer, Responder};
 use dotenvy::dotenv;
 use sqlx::postgres::PgPoolOptions;
 
@@ -33,21 +34,27 @@ async fn main() -> std::io::Result<()> {
     println!("Connected to database");
     
 
-    HttpServer::new(move || {
-        App::new()
-            .service(health)
-            .service(create_partner)
-            .service(delete_partner)
-            .service(get_partner_by_id)
-            .service(add_country_to_partner)
-            .service(update_partner)
-            .service(remove_country_from_partner)
-            .service(get_countries_by_region)
-            .service(get_regions)
-            .service(get_partner_details_by_id)
-            .route("/countries", web::get().to(get_countries))
-            .route("/partners", web::get().to(get_partners))
-            .app_data(web::Data::new(db_pool.clone()))
+        HttpServer::new(move || {
+            let cors = Cors::default()
+                .allowed_origin("http://localhost:5173")
+                .allowed_methods(vec!["GET", "POST", "PATCH", "DELETE"])
+                .allowed_headers(vec![header::ACCEPT, header::CONTENT_TYPE]);
+
+            App::new()
+                .wrap(cors)
+                .app_data(web::Data::new(db_pool.clone()))
+                .service(health)
+                .service(create_partner)
+                .service(delete_partner)
+                .service(get_partner_by_id)
+                .service(add_country_to_partner)
+                .service(update_partner)
+                .service(remove_country_from_partner)
+                .service(get_countries_by_region)
+                .service(get_regions)
+                .service(get_partner_details_by_id)
+                .route("/countries", web::get().to(get_countries))
+                .route("/partners", web::get().to(get_partners))
         })
         .bind(("127.0.0.1", port))?
         .workers(2)
