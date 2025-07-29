@@ -1,8 +1,7 @@
-use actix_web::{web, Responder};
-use sqlx::{query_as, PgPool};
+use actix_web::{Responder, web};
+use sqlx::{PgPool, query_as};
 
 use crate::models::partners::Partner;
-
 
 pub async fn get_partners(db: web::Data<PgPool>) -> impl Responder {
     let result = query_as::<_, Partner>("select * from partners")
@@ -10,11 +9,10 @@ pub async fn get_partners(db: web::Data<PgPool>) -> impl Responder {
         .await;
 
     match result {
-       Ok(partners) => web::Json(partners),
-       Err(e) => {
+        Ok(partners) => web::Json(partners),
+        Err(e) => {
             eprintln!("Fetching users failed: {}", e);
             web::Json(Vec::<Partner>::new())
-       }
+        }
     }
 }
-
