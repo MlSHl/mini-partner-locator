@@ -2,7 +2,7 @@ use serde::{Deserialize, Serialize};
 use sqlx::FromRow;
 use strum_macros::{Display, EnumIter, EnumString};
 
-#[derive(Serialize, FromRow)]
+#[derive(Deserialize, Serialize, FromRow)]
 pub struct Country {
     pub id: i32,
     pub name: String,

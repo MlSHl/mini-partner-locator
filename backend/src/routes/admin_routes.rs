@@ -1,6 +1,6 @@
 use actix_web::{delete, get, patch, post, web, HttpResponse, Responder};
 use sqlx::{query, query_as, PgPool};
-use crate::models::partners::{NewPartner, Partner, UpdatePartner};
+use crate::{db::partner_queries::fetch_partner, models::{countries::CountryName, partners::{NewPartner, Partner, PartnerDetails, UpdatePartner}}};
 
 #[post("/admin/partners")]
 pub async fn create_partner(
@@ -77,33 +77,57 @@ pub async fn delete_partner(
 }
 
 #[get("/admin/partners/{id}")]
-pub async fn get_partner_by_id(
+pub async fn get_partner_details_by_id(
     db: web::Data<PgPool>,
     id: web::Path<i32>
 ) -> impl Responder{
     let id = id.into_inner();
-
-    let result = sqlx::query_as!(
-        Partner, 
-        "select id, name, email, website_url, created_at from partners where id = $1",
-        id)
-        .fetch_optional(db.get_ref())
-        .await;
-
-    match result {
-        Ok(Some(partner)) => {
-            println!("Partner fetched successfully with id: {id}");
-            HttpResponse::Ok().json(partner)
-        }
+    let fetched_partner = fetch_partner(db.get_ref(), id).await;
+    
+    let partner = match fetched_partner {
+        Ok(Some(p)) => {
+            println!("User found with id: {id}");
+            p
+        },
         Ok(None) => {
-            eprintln!("No partner found for id: {id}");
-            HttpResponse::NotFound().body(format!("No partner found for id: {id}"))
-        }
+            eprintln!("No partner found int he database for id: {id}");
+            return HttpResponse::NotFound().body("No partner found with given id");
+        },
         Err(e) => {
-            eprintln!("Error fetching partner: {}", e);
-            HttpResponse::InternalServerError().finish()
+            eprintln!("Error while fetching partner with id: {id}, error: {e}");
+            return HttpResponse::InternalServerError().finish();
         }
-    }
+    };
+
+    let fetched_countries = sqlx::query_as!(CountryName,
+        "select c.name
+        from partner_countries pc
+        left join countries c
+        on pc.country_id= c.id
+        where pc.partner_id = $1",
+        id).fetch_all(db.get_ref()).await;
+
+    let countries = match fetched_countries {
+        Ok(vec) => {
+            println!("Fetched countries for the partner with id: {id}");
+            vec
+        },
+        Err(e) => {
+            eprintln!("Error while trying to fetch countries for partner with id: {id}, error: {e}");
+            return HttpResponse::InternalServerError().finish();
+        }
+    };
+
+    let result = PartnerDetails {
+        id: partner.id,
+        name: partner.name,
+        email: partner.email,
+        website_url: partner.website_url,
+        created_at: partner.created_at,
+        countries: countries,
+    };
+
+    HttpResponse::Ok().json(result) 
 }
 
 #[delete("admin/partners/{id}/country/{country_id}")]

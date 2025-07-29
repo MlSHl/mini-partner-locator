@@ -2,6 +2,8 @@ use chrono::NaiveDateTime;
 use serde::{Deserialize, Serialize};
 use sqlx::prelude::FromRow;
 
+use crate::models::countries::CountryName;
+
 #[derive(Serialize, FromRow)]
 pub struct Partner {
     pub id: i32,
@@ -9,6 +11,16 @@ pub struct Partner {
     pub email: Option<String>,
     pub website_url: Option<String>,
     pub created_at: Option<NaiveDateTime>,
+}
+
+#[derive(Serialize)]
+pub struct PartnerDetails {
+    pub id: i32,
+    pub name: String,
+    pub email: Option<String>,
+    pub website_url: Option<String>,
+    pub created_at: Option<NaiveDateTime>,
+    pub countries: Vec<CountryName>,
 }
 
 #[derive(Deserialize)]
@@ -25,3 +37,4 @@ pub struct UpdatePartner {
     pub email: Option<String>,
     pub website_url: Option<String>,
 }
+
