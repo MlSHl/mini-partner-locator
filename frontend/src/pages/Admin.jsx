@@ -3,6 +3,7 @@ import { addCountryToPartner, createPartner, deletePartner, getAllPartnersDetail
 import PartnersTable from "../components/PartnersTable";
 import PartnerFormModal from "../components/PartnerFormModal";
 import { getAllCountries } from "../api/country";
+import PageHeader from "../components/PageHeader";
 
 function Admin() {
   const [partners, setPartners] = useState([]);
@@ -77,7 +78,9 @@ function Admin() {
       await fetchPartners();
     };
 
-      return (
+      return ( 
+        <div className="min-h-screen bg-gray-50 py-8 px-4 sm:px-8">
+        <PageHeader isHome={false}/>
         <div className="p-8 max-w-7xl mx-auto">
           <h1 className="text-3xl font-bold mb-6">Admin Panel</h1>
           <button
@@ -96,6 +99,7 @@ function Admin() {
             onDelete={handleDelete}
           />
         </div>
+          </div>
       );
     }
 

@@ -57,7 +57,8 @@ function PartnerFormModal({ isOpen, onClose, onSubmit, countries, existingPartne
               className="mt-1 p-2 w-full border rounded"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              required
+              placeholder="Optional"
+              pattern="[^@\s]+@[^@\s]+\.[^@\s]+"
             />
           </div>
 
@@ -97,22 +98,22 @@ function PartnerFormModal({ isOpen, onClose, onSubmit, countries, existingPartne
         </div>
 
 
-          <div className="flex justify-end space-x-4 mt-6">
-
-            {existingPartner && (
-              <button
-                type="button"
-                onClick={() => {
-                  if (confirm("Are you sure you want to delete this partner?")) {
-                    onDelete(existingPartner.id);
-                    onClose();
-                  }
-                }}
-                className="px-4 py-2 bg-red-100 hover:bg-red-200 text-red-700 rounded"
-              >
-                Delete Partner
-              </button>
-            )}
+        <div className="flex justify-between items-center mt-6">
+          {existingPartner && (
+            <button
+              type="button"
+              onClick={() => {
+                if (confirm("Are you sure you want to delete this partner?")) {
+                  onDelete(existingPartner.id);
+                  onClose();
+                }
+              }}
+              className="px-4 py-2 bg-red-100 hover:bg-red-200 text-red-700 rounded"
+            >
+              Delete Partner
+            </button>
+          )}
+          <div className="flex space-x-4">
             <button
               type="button"
               onClick={onClose}
@@ -127,6 +128,7 @@ function PartnerFormModal({ isOpen, onClose, onSubmit, countries, existingPartne
               {existingPartner ? "Save Changes" : "Add Partner"}
             </button>
           </div>
+        </div>
         </form>
       </div>
     </div>

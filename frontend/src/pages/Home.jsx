@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { getRegions, getCountriesByRegion } from "../api/country";
 import { ChevronDownIcon, ChevronUpIcon } from "@heroicons/react/20/solid";
 import { Link } from "react-router-dom";
+import PageHeader from "../components/PageHeader";
 function Home() {
 
     const [regions, setRegions] = useState([]);
@@ -31,7 +32,8 @@ function Home() {
     }, []);
 
     return (
-    <div className="min-h-screen bg-gray-50 py-10 px-4 sm:px-8">
+    <div className="min-h-screen bg-gray-50 py-8 px-4 sm:px-8">
+              <PageHeader isHome={true}/>
         <h1 className="text-4xl font-bold text-center text-gray-800 mb-12 tracking-tight">
          Partners By Regions 
     </h1>
