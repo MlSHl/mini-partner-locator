@@ -9,7 +9,7 @@ use actix_web::{get, web, App, HttpServer, Responder};
 use dotenvy::dotenv;
 use sqlx::postgres::PgPoolOptions;
 
-use crate::routes::{admin_routes::{add_country_to_partner, create_partner, delete_partner, get_partner_details_by_id, remove_country_from_partner, update_partner}, country_routes::{get_countries, get_countries_by_region, get_regions}, 
+use crate::routes::{admin_routes::{add_country_to_partner, create_partner, delete_partner, get_all_partners_with_countries, get_partner_details_by_id, remove_country_from_partner, update_partner}, country_routes::{get_countries, get_countries_by_region, get_regions}, 
     partner_routes::{get_partner_by_id, get_partners, get_partners_by_country}};
 
 #[get("/health")]
@@ -51,6 +51,7 @@ async fn main() -> std::io::Result<()> {
                 .service(get_regions)
                 .service(get_partner_details_by_id)
                 .service(get_partners_by_country)
+                .service(get_all_partners_with_countries)
                 .route("/countries", web::get().to(get_countries))
                 .route("/partners", web::get().to(get_partners))
         })

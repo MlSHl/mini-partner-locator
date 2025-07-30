@@ -130,6 +130,61 @@ pub async fn get_partner_details_by_id(
     HttpResponse::Ok().json(result) 
 }
 
+#[get("/admin/partners")]
+pub async fn get_all_partners_with_countries(
+    db: web::Data<PgPool>,
+) -> impl Responder {
+    let fetched_partners = sqlx::query_as!(
+        Partner,
+        "SELECT id, name, email, website_url, created_at FROM partners"
+    )
+    .fetch_all(db.get_ref())
+    .await;
+
+    let partners = match fetched_partners {
+        Ok(p) => p,
+        Err(e) => {
+            eprintln!("Failed to fetch partners: {e}");
+            return HttpResponse::InternalServerError().finish();
+        }
+    };
+
+    let mut enriched_partners = Vec::new();
+    for partner in partners {
+        let countries = sqlx::query_as!(
+            CountryName,
+            "SELECT c.name
+             FROM partner_countries pc
+             LEFT JOIN countries c ON c.id = pc.country_id
+             WHERE pc.partner_id = $1",
+            partner.id
+        )
+        .fetch_all(db.get_ref())
+        .await;
+
+        let countries = match countries {
+            Ok(c) => c,
+            Err(e) => {
+                eprintln!("Error fetching countries for partner id {}: {e}", partner.id);
+                return HttpResponse::InternalServerError().finish();
+            }
+        };
+
+        let result = PartnerDetails {
+            id: partner.id,
+            name: partner.name,
+            email: partner.email,
+            website_url: partner.website_url,
+            created_at: partner.created_at,
+            countries,
+        };
+
+        enriched_partners.push(result);
+    }
+
+    HttpResponse::Ok().json(enriched_partners)
+}
+
 #[delete("admin/partners/{id}/country/{country_id}")]
 pub async fn remove_country_from_partner(
     db: web::Data<PgPool>,
