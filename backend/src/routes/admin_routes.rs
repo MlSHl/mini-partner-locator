@@ -1,6 +1,6 @@
 use actix_web::{delete, get, patch, post, web, HttpResponse, Responder};
 use sqlx::{query, query_as, PgPool};
-use crate::{db::partner_queries::fetch_partner, models::{countries::CountryName, partners::{NewPartner, Partner, PartnerDetails, UpdatePartner}}};
+use crate::{db::partner_queries::fetch_partner, models::{countries::{Country}, partners::{NewPartner, Partner, PartnerDetails, UpdatePartner}}};
 
 #[post("/admin/partners")]
 pub async fn create_partner(
@@ -63,10 +63,14 @@ pub async fn delete_partner(
         Ok(deleted_result) => {
             if deleted_result.rows_affected() == 0 {
                 eprintln!("Could not delete, partner not found with id: {id}");
-                HttpResponse::NotFound().body("Partner not found")
+                HttpResponse::NotFound().json(serde_json::json!({
+                    "message":"Partner not found"
+                }))
             } else {
                 println!("Partner deleted with id: {id}");
-                HttpResponse::Ok().body("Partner deleted successfully")
+                HttpResponse::Ok().json(serde_json::json!({
+                    "message": "Partner successfully deleted"
+                }))
             }
         }
         Err(e) => {
@@ -91,7 +95,9 @@ pub async fn get_partner_details_by_id(
         },
         Ok(None) => {
             eprintln!("No partner found int he database for id: {id}");
-            return HttpResponse::NotFound().body("No partner found with given id");
+            return HttpResponse::NotFound().json(serde_json::json!({
+                    "message":"Partner not found"
+            }))
         },
         Err(e) => {
             eprintln!("Error while fetching partner with id: {id}, error: {e}");
@@ -99,8 +105,8 @@ pub async fn get_partner_details_by_id(
         }
     };
 
-    let fetched_countries = sqlx::query_as!(CountryName,
-        "select c.name
+    let fetched_countries = sqlx::query_as!(Country,
+        "select c.id, c.name, c.region
         from partner_countries pc
         left join countries c
         on pc.country_id= c.id
@@ -152,8 +158,8 @@ pub async fn get_all_partners_with_countries(
     let mut enriched_partners = Vec::new();
     for partner in partners {
         let countries = sqlx::query_as!(
-            CountryName,
-            "SELECT c.name
+            Country,
+            "SELECT c.id, c.name, c.region
              FROM partner_countries pc
              LEFT JOIN countries c ON c.id = pc.country_id
              WHERE pc.partner_id = $1",
@@ -233,12 +239,16 @@ pub async fn add_country_to_partner(
     match result {
         Ok(_) => {
             println!("Inseted the partner country id pair: {partner_id}, {country_id}");
-            HttpResponse::Ok().body("Added country to the partner successfully")
+                HttpResponse::Ok().json(serde_json::json!({
+                    "message": "Country was added successfully"
+                }))
         }
         Err(e) => {
             if let Some(db_err) = e.as_database_error() {
                 if db_err.code().as_deref() == Some("23505"){
-                    return HttpResponse::Conflict().body("This country is already added to this partner");
+                    return HttpResponse::Conflict().json(serde_json::json!({
+                        "message":"This country is already added to this partner"
+                    }))
                 }
             }
             eprintln!("Failed to insert the partner country id pair: {partner_id}, {country_id}, error: {e}");
@@ -269,10 +279,14 @@ pub async fn update_partner(
         Ok(updated_result) => {
             if updated_result.rows_affected() == 0{
                 println!("Unable to find partner with partner_id: {partner_id}");
-                HttpResponse::NotFound().body("No such partner found")
+                HttpResponse::NotFound().json(serde_json::json!({
+                    "message":"Partner not found"
+                }))
             } else {
                 println!("Successfully updated the user with id: {partner_id}");
-                HttpResponse::Ok().body("Partner successfully updated")
+                HttpResponse::Ok().json(serde_json::json!({
+                    "message": "Partner successfully updated"
+                }))
             }
         }
         Err(e) => {
