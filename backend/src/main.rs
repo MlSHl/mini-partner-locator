@@ -5,12 +5,12 @@ mod db;
 use std::env;
 
 use actix_cors::Cors;
-use actix_web::{get, http::header, web, App, HttpServer, Responder};
+use actix_web::{get, web, App, HttpServer, Responder};
 use dotenvy::dotenv;
 use sqlx::postgres::PgPoolOptions;
 
 use crate::routes::{admin_routes::{add_country_to_partner, create_partner, delete_partner, get_partner_details_by_id, remove_country_from_partner, update_partner}, country_routes::{get_countries, get_countries_by_region, get_regions}, 
-    partner_routes::{get_partner_by_id, get_partners}};
+    partner_routes::{get_partner_by_id, get_partners, get_partners_by_country}};
 
 #[get("/health")]
 async fn health() -> impl Responder {
@@ -35,10 +35,7 @@ async fn main() -> std::io::Result<()> {
     
 
         HttpServer::new(move || {
-            let cors = Cors::default()
-                .allowed_origin("http://localhost:5173")
-                .allowed_methods(vec!["GET", "POST", "PATCH", "DELETE"])
-                .allowed_headers(vec![header::ACCEPT, header::CONTENT_TYPE]);
+        let cors = Cors::permissive();
 
             App::new()
                 .wrap(cors)
@@ -53,6 +50,7 @@ async fn main() -> std::io::Result<()> {
                 .service(get_countries_by_region)
                 .service(get_regions)
                 .service(get_partner_details_by_id)
+                .service(get_partners_by_country)
                 .route("/countries", web::get().to(get_countries))
                 .route("/partners", web::get().to(get_partners))
         })

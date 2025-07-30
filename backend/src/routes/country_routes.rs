@@ -1,4 +1,4 @@
-use crate::models::countries::{Country, CountryName, Region, RegionResponse};
+use crate::models::countries::{Country, CountryName, Region};
 use actix_web::{HttpResponse, Responder, get, web};
 use sqlx::PgPool;
 use strum::IntoEnumIterator;
@@ -44,13 +44,9 @@ pub async fn get_countries_by_region(
     }
 }
 
+
 #[get("/regions")]
 pub async fn get_regions() -> impl Responder {
-    let regions: Vec<RegionResponse> = Region::iter()
-        .map(|r| RegionResponse {
-            region: r,
-        }).collect();
-
-    println!("Returning list of regions");
+    let regions: Vec<Region> = Region::iter().collect();
     HttpResponse::Ok().json(regions)
 }

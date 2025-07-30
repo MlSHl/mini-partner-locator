@@ -9,7 +9,7 @@ pub struct Partner {
     pub id: i32,
     pub name: String,
     pub email: Option<String>,
-    pub website_url: Option<String>,
+    pub website_url: String,
     pub created_at: Option<NaiveDateTime>,
 }
 
@@ -18,7 +18,7 @@ pub struct PartnerDetails {
     pub id: i32,
     pub name: String,
     pub email: Option<String>,
-    pub website_url: Option<String>,
+    pub website_url: String,
     pub created_at: Option<NaiveDateTime>,
     pub countries: Vec<CountryName>,
 }
@@ -36,5 +36,12 @@ pub struct UpdatePartner {
     pub name: Option<String>,
     pub email: Option<String>,
     pub website_url: Option<String>,
+}
+
+#[derive(Serialize)]
+pub struct PartnerPerCountry {
+    pub name: String,
+    pub website_url: String,
+    pub email: Option<String>,
 }
 
